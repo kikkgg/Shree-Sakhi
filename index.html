@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Shree Sakhi</title>
+<style>
+  :root {
+    --bg: #0f1220;
+    --card: #171a2b;
+    --muted: #a7b0c0;
+    --text: #e9eef8;
+    --primary: #2ecc71;
+    --primary-weak: #1e8f52;
+    --danger: #ff5c5c;
+    --accent: #6c8cff;
+    --border: #2a2f45;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji"; }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 16px; }
+  h1 { font-size: 22px; margin: 8px 0 12px; letter-spacing: 0.2px; }
+  .sub { color: var(--muted); font-size: 13px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px; margin: 10px 0; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .col { flex: 1 1 220px; }
+  .btn { background: #232844; color: var(--text); border: 1px solid var(--border); padding: 10px 12px; border-radius: 10px; cursor: pointer; font-weight: 600; }
+  .btn:hover { filter: brightness(1.05); }
+  .btn.primary { background: linear-gradient(180deg, var(--primary), var(--primary-weak)); border: none; color: #07250f; }
+  .btn.ghost { background: transparent; border: 1px dashed var(--border); }
+  .btn.danger { background: #3a1b22; border: 1px solid #5b222e; color: #ffc7cd; }
+  .btn.small { padding: 8px 10px; font-size: 13px; }
+  .btnbar { display: flex; gap: 8px; flex-wrap: wrap; }
+  input, select { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); background: #12162a; color: var(--text); }
+  label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+  .progress { width: 100%; height: 16px; background: #0b0e1b; border: 1px solid var(--border); border-radius: 999px; overflow: hidden; }
+  .progress .fill { height: 100%; background: linear-gradient(90deg, var(--primary), #9cf0bd); width: 0%; transition: width .3s ease; }
+  .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  @media (min-width: 700px) { .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  .stat { background: #12162a; border: 1px solid var(--border); border-radius: 12px; padding: 12px; }
+  .stat .k { color: var(--muted); font-size: 12px; }
+  .stat .v { font-size: 18px; font-weight: 700; margin-top: 6px; }
+  .muted { color: var(--muted); }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { padding: 10px; border-bottom: 1px solid var(--border); text-align: left; }
+  th { color: var(--muted); font-weight: 600; }
+  .right { text-align: right; }
+  .center { text-align: center; }
+  .pill { display: inline-block; padding: 4px 8px; border-radius: 999px; font-size: 12px; border: 1px solid var(--border); color: var(--muted); }
+  .split { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .hidden { display: none !important; }
+  .note { font-size: 12px; color: var(--muted); margin-top: 6px; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Shree Sakhi</h1>
+
+    <div class="card">
+      <div class="row">
+        <div class="col">
+          <label>Target (Total Japa)</label>
+          <input id="targetInput" type="number" min="1" step="1" />
+        </div>
+        <div class="col">
+          <label>Finish by (optional)</label>
+          <input id="finishByInput" type="date" />
+        </div>
+        <div class="col">
+          <label>Daily Goal (optional)</label>
+          <input id="dailyGoalInput" type="number" min="0" step="1" placeholder="e.g., 3000" />
+        </div>
+      </div>
+      <div class="note"></div>
+    </div>
+
+    <div class="card">
+      <div class="split">
+        <div><strong>Total Progress</strong></div>
+        <div class="pill" id="percentText">0%</div>
+      </div>
+      <div class="progress" style="margin:10px 0 8px">
+        <div class="fill" id="progressFill"></div>
+      </div>
+      <div class="grid">
+        <div class="stat"><div class="k">Completed</div><div class="v" id="completedEl">0</div></div>
+        <div class="stat"><div class="k">Remaining</div><div class="v" id="remainingEl">0</div></div>
+        <div class="stat"><div class="k">Start Date</div><div class="v" id="startDateEl">—</div></div>
+        <div class="stat"><div class="k">Days Elapsed</div><div class="v" id="daysElapsedEl">0</div></div>
+        <div class="stat"><div class="k">Avg/Day (overall)</div><div class="v" id="avgOverallEl">0</div></div>
+        <div class="stat"><div class="k">Avg/Day (30d)</div><div class="v" id="avg30El">0</div></div>
+        <div class="stat"><div class="k">ETA (overall)</div><div class="v" id="etaOverallEl">—</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="split">
+        <strong>Today vs Yesterday</strong>
+        <span class="pill" id="reqPerDayPill">Required/day: —</span>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <div class="col">
+          <div class="stat">
+            <div class="k">Today</div>
+            <div class="v" id="todayEl">0</div>
+            <div class="progress" style="margin-top:8px">
+              <div class="fill" id="todayFill" style="background: linear-gradient(90deg, #6c8cff, #a9baff)"></div>
+            </div>
+            <div class="note">Daily goal progress</div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="stat">
+            <div class="k">Yesterday</div>
+            <div class="v" id="yesterdayEl">0</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <strong>Add Jaap</strong>
+      <div class="btnbar" style="margin-top:10px">
+        <button class="btn small" data-add="108">+108</button>
+        <button class="btn small" data-add="1000">+1,000</button>
+        <button class="btn small" data-add="3000">+3,000</button>
+        <button class="btn small" data-add="4000">+4,000</button>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <div class="col">
+          <label>Custom Count</label>
+          <input id="customInput" type="number" min="1" step="1" placeholder="e.g., 4320" />
+        </div>
+        <div class="col">
+          <label>Note (optional)</label>
+          <input id="noteInput" type="text" placeholder="e.g., Morning session" />
+        </div>
+      </div>
+      <div class="btnbar" style="margin-top:10px">
+        <button class="btn primary" id="addCustomBtn">Add</button>
+        <button class="btn ghost" id="undoBtn">Undo last</button>
+        <button class="btn danger" id="resetBtn">Reset all</button>
+      </div>
+      <div class="note"></div>
+    </div>
+
+    <div class="card">
+      <div class="split">
+        <strong>Daily History</strong>
+        <span class="muted" id="historyRangeNote"></span>
+      </div>
+
+      <div class="row" style="margin-top:8px">
+        <div class="col">
+          <label>From</label>
+          <input id="historyFrom" type="date" />
+        </div>
+        <div class="col">
+          <label>To</label>
+          <input id="historyTo" type="date" />
+        </div>
+      </div>
+      <div class="btnbar" style="margin-top:8px">
+        <button class="btn small" id="applyRangeBtn">Apply</button>
+        <button class="btn ghost small" id="resetRangeBtn">Reset</button>
+      </div>
+
+      <div style="overflow:auto; margin-top:8px">
+        <table>
+          <thead>
+            <tr><th>Date</th><th class="right">Total</th></tr>
+          </thead>
+          <tbody id="historyTbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="split">
+        <strong>Backup</strong>
+      </div>
+      <div class="btnbar" style="margin-top:8px">
+        <button class="btn" id="exportBtn">Export JSON</button>
+        <label class="btn ghost" style="cursor:pointer">
+          Import JSON
+          <input id="importInput" type="file" accept="application/json" style="display:none" />
+        </label>
+      </div>
+      <div class="note">Export se .json file download hogi. Naya phone lene pe Import se restore kar sakte ho.</div>
+    </div>
+
+    <div class="center muted" style="padding:20px 0 10px; font-size:12px">
+      Made for Radhe ✨
+    </div>
+  </div>
+
+<script>
+(function() {
+  const KEY = 'japa_tracker_v1';
+  const fmt = new Intl.NumberFormat('en-IN');
+  const todayLocal = () => {
+    const d = new Date();
+    d.setHours(0,0,0,0);
+    return d;
+  };
+  const dateKey = d => {
+    const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), dd = String(d.getDate()).padStart(2,'0');
+    return y + '-' + m + '-' + dd;
+  };
+  const parseDateKey = s => {
+    const [y,m,d] = s.split('-').map(Number);
+    const dt = new Date(y, m-1, d);
+    dt.setHours(0,0,0,0);
+    return dt;
+  };
+  const daysBetween = (a,b) => Math.round((Date.UTC(b.getFullYear(), b.getMonth(), b.getDate()) - Date.UTC(a.getFullYear(), a.getMonth(), a.getDate())) / 86400000);
+  const formatDate = d => d.toLocaleDateString('en-IN', { weekday:'short', day:'2-digit', month:'short', year:'numeric' });
+
+  function defaultData() {
+    return {
+      version: 2,
+      target: 20000000,
+      entries: [], // {ts: number, count: number, note?: string}
+      dailyGoal: 0,
+      finishBy: "", // yyyy-mm-dd
+      historyFrom: "",
+      historyTo: ""
+    };
+  }
+
+  function load() {
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (!raw) return defaultData();
+      const obj = JSON.parse(raw);
+      const d = defaultData();
+      return Object.assign(d, obj);
+    } catch (e) {
+      console.warn('Failed to load data, resetting.', e);
+      return defaultData();
+    }
+  }
+  function save() {
+    localStorage.setItem(KEY, JSON.stringify(state));
+  }
+
+  let state = load();
+
+  // Elements
+  const targetInput = document.getElementById('targetInput');
+  const finishByInput = document.getElementById('finishByInput');
+  const dailyGoalInput = document.getElementById('dailyGoalInput');
+  const percentText = document.getElementById('percentText');
+  const progressFill = document.getElementById('progressFill');
+  const completedEl = document.getElementById('completedEl');
+  const remainingEl = document.getElementById('remainingEl');
+  const startDateEl = document.getElementById('startDateEl');
+  const daysElapsedEl = document.getElementById('daysElapsedEl');
+  const avgOverallEl = document.getElementById('avgOverallEl');
+  const avg30El = document.getElementById('avg30El');
+  const etaOverallEl = document.getElementById('etaOverallEl');
+  const reqPerDayPill = document.getElementById('reqPerDayPill');
+  const todayEl = document.getElementById('todayEl');
+  const yesterdayEl = document.getElementById('yesterdayEl');
+  const todayFill = document.getElementById('todayFill');
+  const historyTbody = document.getElementById('historyTbody');
+  const historyRangeNote = document.getElementById('historyRangeNote');
+  const customInput = document.getElementById('customInput');
+  const noteInput = document.getElementById('noteInput');
+  const addCustomBtn = document.getElementById('addCustomBtn');
+  const undoBtn = document.getElementById('undoBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const exportBtn = document.getElementById('exportBtn');
+  const importInput = document.getElementById('importInput');
+
+  // History filter elements
+  const historyFromInput = document.getElementById('historyFrom');
+  const historyToInput = document.getElementById('historyTo');
+  const applyRangeBtn = document.getElementById('applyRangeBtn');
+  const resetRangeBtn = document.getElementById('resetRangeBtn');
+
+  // Init inputs
+  targetInput.value = state.target;
+  finishByInput.value = state.finishBy || "";
+  dailyGoalInput.value = state.dailyGoal || "";
+  historyFromInput.value = state.historyFrom || "";
+  historyToInput.value = state.historyTo || "";
+
+  // Handlers
+  targetInput.addEventListener('change', () => {
+    const n = Math.max(1, Math.floor(Number(targetInput.value || 0)));
+    state.target = n;
+    targetInput.value = n;
+    save(); render();
+  });
+  finishByInput.addEventListener('change', () => {
+    state.finishBy = finishByInput.value || "";
+    save(); render();
+  });
+  dailyGoalInput.addEventListener('change', () => {
+    const n = Math.max(0, Math.floor(Number(dailyGoalInput.value || 0)));
+    state.dailyGoal = n;
+    dailyGoalInput.value = n || "";
+    save(); render();
+  });
+
+  document.querySelectorAll('[data-add]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const n = Number(btn.getAttribute('data-add'));
+      addCount(n, noteInput.value.trim());
+      noteInput.value = '';
+    });
+  });
+  addCustomBtn.addEventListener('click', () => {
+    const n = Math.floor(Number(customInput.value || 0));
+    if (!n || n <= 0) { alert('Enter a positive number'); return; }
+    addCount(n, noteInput.value.trim());
+    customInput.value = '';
+    noteInput.value = '';
+  });
+  undoBtn.addEventListener('click', () => {
+    if (state.entries.length === 0) return;
+    const last = state.entries[state.entries.length - 1];
+    if (confirm(`Undo last entry?\n\n${last.count} @ ${new Date(last.ts).toLocaleString()}\n${last.note ? 'Note: ' + last.note : ''}`)) {
+      state.entries.pop();
+      save(); render();
+    }
+  });
+  resetBtn.addEventListener('click', () => {
+    if (confirm('Reset all data? This will clear all entries.')) {
+      state = defaultData();
+      save(); render();
+    }
+  });
+  exportBtn.addEventListener('click', () => {
+    const blob = new Blob([JSON.stringify(state, null, 2)], {type: 'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'japa-tracker-backup.json';
+    document.body.appendChild(a);
+    a.click();
+    URL.revokeObjectURL(a.href);
+    a.remove();
+  });
+  importInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const obj = JSON.parse(reader.result);
+        if (!obj || typeof obj !== 'object' || !Array.isArray(obj.entries)) throw new Error('Invalid file');
+        obj.entries = obj.entries.map(it => ({ ts: Number(it.ts), count: Number(it.count), note: it.note || '' }))
+                                 .filter(it => it.ts && it.count > 0);
+        state = Object.assign(defaultData(), obj);
+        save(); render();
+        alert('Import successful.');
+      } catch (err) {
+        alert('Import failed: ' + err.message);
+      } finally {
+        importInput.value = '';
+      }
+    };
+    reader.readAsText(file);
+  });
+
+  // History filter handlers
+  applyRangeBtn.addEventListener('click', () => {
+    const fromVal = historyFromInput.value;
+    const toVal = historyToInput.value;
+    if (!fromVal || !toVal) { alert('Please select both From and To dates'); return; }
+    const from = parseDateKey(fromVal);
+    const to = parseDateKey(toVal);
+    if (from > to) { alert('From date cannot be after To date'); return; }
+    state.historyFrom = fromVal;
+    state.historyTo = toVal;
+    save(); render();
+  });
+  resetRangeBtn.addEventListener('click', () => {
+    state.historyFrom = "";
+    state.historyTo = "";
+    historyFromInput.value = "";
+    historyToInput.value = "";
+    save(); render();
+  });
+
+  function addCount(n, note) {
+    state.entries.push({ ts: Date.now(), count: n, note: note || '' });
+    save(); render();
+  }
+
+  function sum(arr, sel) {
+    let s = 0;
+    for (const x of arr) s += sel ? sel(x) : x;
+    return s;
+  }
+
+  function computeDailyTotals(entries) {
+    const map = {}; // key: yyyy-mm-dd -> sum
+    for (const e of entries) {
+      const d = new Date(Number(e.ts));
+      const key = dateKey(d);
+      map[key] = (map[key] || 0) + Number(e.count || 0);
+    }
+    return map;
+  }
+
+  function render() {
+    // totals
+    const total = sum(state.entries, e => Number(e.count || 0));
+    const target = Math.max(1, Number(state.target || 1));
+    const remaining = Math.max(0, target - total);
+    const percent = Math.min(100, (total / target) * 100);
+
+    completedEl.textContent = fmt.format(total);
+    remainingEl.textContent = fmt.format(remaining);
+    percentText.textContent = (percent).toFixed(2) + '%';
+    progressFill.style.width = percent + '%';
+
+    // start date + days elapsed
+    let startTs = null;
+    if (state.entries.length > 0) {
+      startTs = Math.min(...state.entries.map(e => Number(e.ts)));
+    }
+    if (startTs) {
+      const start = new Date(startTs);
+      start.setHours(0,0,0,0);
+      const today = todayLocal();
+      const elapsed = daysBetween(start, today) + 1; // inclusive
+      startDateEl.textContent = formatDate(start);
+      daysElapsedEl.textContent = fmt.format(elapsed);
+
+      // averages
+      const avgOverall = total / Math.max(1, elapsed);
+      avgOverallEl.textContent = fmt.format(Math.round(avgOverall));
+
+      // 30-day avg
+      const daily = computeDailyTotals(state.entries);
+      let sum30 = 0;
+      for (let i = 29; i >= 0; i--) {
+        const d = new Date(today);
+        d.setDate(d.getDate() - i);
+        const k = dateKey(d);
+        sum30 += daily[k] || 0;
+      }
+      const avg30 = sum30 / 30;
+      avg30El.textContent = fmt.format(Math.round(avg30));
+
+      // ETA (overall only)
+      const etaOverall = avgOverall > 0 ? Math.ceil(remaining / avgOverall) : null;
+      etaOverallEl.textContent = etaOverall != null ? formatDate(addDays(today, etaOverall)) + ` (${etaOverall} days)` : '—';
+    } else {
+      startDateEl.textContent = '—';
+      daysElapsedEl.textContent = '0';
+      avgOverallEl.textContent = '0';
+      avg30El.textContent = '0';
+      etaOverallEl.textContent = '—';
+    }
+
+    // today vs yesterday
+    const daily = computeDailyTotals(state.entries);
+    const t = todayLocal();
+    const tk = dateKey(t);
+    const y = new Date(t); y.setDate(y.getDate() - 1);
+    const yk = dateKey(y);
+    const todayCount = daily[tk] || 0;
+    const yesterdayCount = daily[yk] || 0;
+    todayEl.textContent = fmt.format(todayCount);
+    yesterdayEl.textContent = fmt.format(yesterdayCount);
+
+    const goal = Number(state.dailyGoal || 0);
+    const todayPct = goal > 0 ? Math.min(100, (todayCount / goal) * 100) : 0;
+    todayFill.style.width = todayPct + '%';
+
+    // required/day if finishBy set
+    if (state.finishBy) {
+      const fb = parseDateKey(state.finishBy);
+      const diff = daysBetween(t, fb);
+      if (diff <= 0) {
+        reqPerDayPill.textContent = 'Required/day: —';
+      } else {
+        const needPerDay = Math.ceil(remaining / diff);
+        reqPerDayPill.textContent = `Required/day: ${fmt.format(needPerDay)}`;
+      }
+    } else {
+      reqPerDayPill.textContent = 'Required/day: —';
+    }
+
+    // history (default: today + last 2 days; or custom range)
+    let fromDate, toDate;
+    if (state.historyFrom && state.historyTo) {
+      fromDate = parseDateKey(state.historyFrom);
+      toDate = parseDateKey(state.historyTo);
+    } else {
+      toDate = new Date(t);
+      fromDate = new Date(t);
+      fromDate.setDate(fromDate.getDate() - 2); // last 2 days + today
+    }
+
+    const rows = [];
+    for (let d = new Date(fromDate); d <= toDate; d.setDate(d.getDate() + 1)) {
+      const k = dateKey(d);
+      const c = daily[k] || 0;
+      rows.push({ date: new Date(d), count: c });
+    }
+    historyTbody.innerHTML = rows.reverse().map(r => `
+      <tr>
+        <td>${formatDate(r.date)}</td>
+        <td class="right">${fmt.format(r.count)}</td>
+      </tr>
+    `).join('');
+
+    const totalDays = daysBetween(fromDate, toDate) + 1;
+       // toggle undo button
+    undoBtn.disabled = state.entries.length === 0;
+  }
+
+  function addDays(d, days) {
+    const nd = new Date(d);
+    nd.setDate(nd.getDate() + days);
+    nd.setHours(0,0,0,0);
+    return nd;
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
